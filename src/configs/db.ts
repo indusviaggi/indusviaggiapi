@@ -1,7 +1,10 @@
 import mongoose from "mongoose";
 export const connectDB = async () => {
+  const connectionUrl = process.env.DATABASE_URL || '';
   await mongoose
-    .connect(process.env.DATABASE_URL!)
+    .connect(connectionUrl, {
+      dbName: process.env.DATABASE_NAME || ''
+    })
     .then(() => {
       console.log("Successfully connected to the database");
     })

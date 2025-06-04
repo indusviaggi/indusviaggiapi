@@ -18,7 +18,7 @@ export const verifyUserToken = (
       .send({ status: "error", message: "Access denied. No token provided." });
   }
   try {
-    const decoded: any = jwt.verify(token, process.env.JWT_SECRET!);
+    const decoded: any = jwt.verify(token, process.env.JWT_SECRET || '');
     req.user = decoded;
     next();
   } catch (err) {

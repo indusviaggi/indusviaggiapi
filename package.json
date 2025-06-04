@@ -10,17 +10,9 @@
     "lint": "eslint . --ext .ts",
     "test": "tsc && mocha dist/test/*Test.js --timeout 10000"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/bhimrazy/express-app-with-docker-setup.git"
-  },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/bhimrazy/express-app-with-docker-setup/issues"
-  },
-  "homepage": "https://github.com/bhimrazy/express-app-with-docker-setup#readme",
   "dependencies": {
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
