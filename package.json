@@ -1,0 +1,55 @@
+{
+  "name": "express-app-with-docker-setup",
+  "version": "1.0.0",
+  "description": "",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "npx tsc",
+    "start": "node dist/index.js",
+    "dev": "concurrently \"npx tsc --watch\" \"nodemon -q dist/index.js\"",
+    "lint": "eslint . --ext .ts",
+    "test": "tsc && mocha dist/test/*Test.js --timeout 10000"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bhimrazy/express-app-with-docker-setup.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/bhimrazy/express-app-with-docker-setup/issues"
+  },
+  "homepage": "https://github.com/bhimrazy/express-app-with-docker-setup#readme",
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.0.3",
+    "express": "^4.18.2",
+    "express-jsdoc-swagger": "^1.8.0",
+    "express-validator": "^6.14.2",
+    "jsonwebtoken": "^8.5.1",
+    "mongodb": "^4.10.0",
+    "mongoose": "^6.6.5",
+    "morgan": "^1.10.0"
+  },
+  "devDependencies": {
+    "@types/bcryptjs": "^2.4.2",
+    "@types/chai": "^4.3.3",
+    "@types/cors": "^2.8.12",
+    "@types/express": "^4.17.14",
+    "@types/jsonwebtoken": "^8.5.9",
+    "@types/mocha": "^10.0.0",
+    "@types/morgan": "^1.9.3",
+    "@types/node": "^18.11.0",
+    "@typescript-eslint/eslint-plugin": "^5.40.0",
+    "@typescript-eslint/parser": "^5.40.0",
+    "chai": "^4.3.6",
+    "chai-http": "^4.3.0",
+    "concurrently": "^7.4.0",
+    "eslint": "^8.25.0",
+    "mocha": "^10.1.0",
+    "nodemon": "^2.0.20",
+    "typescript": "^4.8.4"
+  }
+}

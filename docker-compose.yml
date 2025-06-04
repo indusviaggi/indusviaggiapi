@@ -1,0 +1,26 @@
+version: '3.7'
+services:
+  node:
+    restart: always
+    build: .
+    ports:
+      - 3000:3000
+    environment:
+      - DATABASE_URL=mongodb://mongo:27017/prod
+    volumes:
+      - ./:/code
+  mongo:
+    image: mongo
+    ports:
+      - 27017:27017
+    volumes:
+      - mongodb:/data/db
+  mongo-express:
+    image: mongo-express
+    restart: always
+    depends_on:
+      - mongo
+    ports:
+      - 8081:8081
+volumes:
+  mongodb:
