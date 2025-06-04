@@ -15,6 +15,7 @@ userRouter.post(
   AuthController.registerUser
 );
 userRouter.post("/login", loginUserDataValidator, AuthController.loginUser);
+userRouter.get("/logout", verifyUserToken, AuthController.logoutUser);
 userRouter.get("/profile", verifyUserToken, AuthController.getUser);
 userRouter.get("/list", verifyUserToken, UserController.getAllUsers);
 

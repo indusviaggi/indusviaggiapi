@@ -5,6 +5,7 @@ import { userService } from "../services/userService";
 import { Request, Response } from "express";
 import { validationResult } from "express-validator";
 import { Serializer } from "../serializers/serializers";
+import { sendSuccess, sendError } from "../validators/response.validator";
 
 interface profileRequest extends Request {
   user?: any;
@@ -17,30 +18,22 @@ export const AuthController = {
       const errors = validationResult(req);
       // if there is error then return Error
       if (!errors.isEmpty()) {
-        return res.status(400).json({
-          status: "error",
-          errors: errors.array(),
-        });
+        sendError(res, {errors: errors.array()}, 400);
+        return;
       }
       const user = req.body;
       if (!user.email || !user.password) {
-        return res.status(400).send({
-          status: "error",
-          message: "Username and password are required.",
-        });
+        sendError(res, {message: 'Username and password are required.'}, 400);
+        return;
       }
       const reg_user = await userService.createUser({
         name: user.name,
         email: user.email,
         password: user.password,
       });
-      res.json({
-        status: "success",
-        message: "user created successfuly",
-        data: Serializer.userSerializer(reg_user),
-      });
+      sendSuccess(res, {user: reg_user});
     } catch (err: any) {
-      res.status(500).json({ status: "error", message: err.message });
+      sendError(res, err, 400);
     }
   },
 
@@ -51,10 +44,8 @@ export const AuthController = {
 
       // if there is error then return Error
       if (!errors.isEmpty()) {
-        return res.status(400).json({
-          status: "error",
-          errors: errors.array(),
-        });
+         sendError(res, {errors: errors.array()}, 400);
+         return;
       }
 
       /* check user is exist with our system */
@@ -62,18 +53,15 @@ export const AuthController = {
         email: req.body.email,
       });
       if (!user) {
-        return res.status(400).send({
-          status: "error",
-          message: "No account is associated with the given email",
-        });
+        sendError(res, {message: "No account is associated with the given email"}, 400);
+        return;
       }
 
       /* compare password */
       const isMatch = await bcrypt.compare(req.body.password, user.password);
       if (!isMatch) {
-        return res
-          .status(400)
-          .send({ status: "error", message: "Invalid password" });
+        sendError(res, {message: "Invalid Password"}, 400);
+        return;
       }
       //create token
       const token = jwt.sign(
@@ -83,13 +71,18 @@ export const AuthController = {
           expiresIn: "1d",
         }
       );
-      res.json({
-        status: "success",
-        data: { token, user: Serializer.userSerializer(user) },
-      });
+      sendSuccess(res, {token, user});
     } catch (err: any) {
-      res.status(500).json({ status: "error", message: err.message });
+       sendError(res, err);
     }
+  },
+
+   /* get user profile logout */
+  logoutUser: async (req: profileRequest, res: Response) => {
+    const user = await User.findOne({
+      email: req.user.email,
+    });
+    sendSuccess(res, user);
   },
 
   /* get user profile */
@@ -97,9 +90,6 @@ export const AuthController = {
     const user = await User.findOne({
       email: req.user.email,
     });
-    res.json({
-      status: "success",
-      data: Serializer.userSerializer(user),
-    });
+    sendSuccess(res, user);
   },
 };
