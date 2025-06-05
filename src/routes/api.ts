@@ -4,6 +4,7 @@ import flightRouter from "./flightRoutes";
 import bookingRouter from "./bookingRoutes";
 import passengerRouter from "./passengerRoutes";
 import paymentRouter from "./paymentRoutes";
+import mailRoutes from "./mailRoutes";
 import { sendSuccess, sendError } from "../validators/response.validator";
 
 const apiRouter = express.Router();
@@ -16,4 +17,5 @@ apiRouter.use("/flights", flightRouter);
 apiRouter.use("/bookings", bookingRouter);
 apiRouter.use("/passengers", passengerRouter);
 apiRouter.use("/payments", paymentRouter);
+apiRouter.use("/mail", mailRoutes);
 export default apiRouter;
