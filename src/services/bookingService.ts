@@ -1,5 +1,7 @@
 import Booking from "../models/booking";
 import Flight from "../models/flight";
+import User from "../models/user";
+import Passenger from "../models/passenger";
 
 export const BookingService = {
   getAllBookings: async () => {
@@ -17,22 +19,29 @@ export const BookingService = {
   deleteBooking: async (id: string) => {
     return await Booking.findByIdAndDelete(id);
   },
-};
-
-export const FlightService = {
-  getAllFlights: async () => {
-    return await Flight.find();
+  getBookingsByUser: async (userId: string) => {
+    return await Booking.find({ user: userId });
   },
-  createFlight: async (flight: any) => {
-    return await Flight.create(flight);
+  getBookingsByFlight: async (flightId: string) => {
+    return await Booking.find({ flight: flightId });
   },
-  getFlightById: async (id: any) => {
-    return await Flight.findById(id);
+  getBookingsByTimeSpan: async (start: Date, end: Date) => {
+    return await Booking.find({
+      bookedAt: { $gte: start, $lte: end },
+    });
   },
-  updateFlight: async (id: any, flight: any) => {
-    return await Flight.findByIdAndUpdate(id, flight, { new: true });
-  },
-  deleteFlight: async (id: any) => {
-    return await Flight.findByIdAndDelete(id);
+  getBookingsByPassenger: async (passengerId: string) => {
+    // Find all passenger docs for this passengerId (could also use passportNumber or email)
+    const passengers = await Passenger.find({ _id: passengerId });
+    if (!passengers.length) {
+      const error = new Error("Passenger not found");
+      (error as any).isCustom = true;
+      (error as any).statusCode = 404;
+      throw error;
+    }
+    // Extract all booking IDs
+    const bookingIds = passengers.map((p) => p.booking);
+    // Find all bookings with those IDs
+    return await Booking.find({ _id: { $in: bookingIds } });
   },
 };

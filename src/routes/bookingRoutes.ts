@@ -4,6 +4,27 @@ import { verifyUserToken } from "../middlewares/verifyUserToken";
 
 const bookingRouter = express.Router();
 
+bookingRouter.get(
+  "/user/:userId",
+  verifyUserToken,
+  BookingController.getBookingsByUser
+);
+bookingRouter.get(
+  "/flight/:flightId",
+  verifyUserToken,
+  BookingController.getBookingsByFlight
+);
+bookingRouter.get(
+  "/filterTimeSpan",
+  verifyUserToken,
+  BookingController.getBookingsByTimeSpan
+);
+bookingRouter.get(
+  "/passenger/:passengerId",
+  verifyUserToken,
+  BookingController.getBookingsByPassenger
+);
+
 bookingRouter
   .route("/")
   .get(verifyUserToken, BookingController.getAllBookings)

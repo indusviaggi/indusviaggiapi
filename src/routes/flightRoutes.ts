@@ -7,7 +7,7 @@ const flightRouter = express.Router();
 
 flightRouter
   .route("/")
-  .get(FlightController.getAllFlights)
+  .get(verifyUserToken, FlightController.getAllFlights)
   .post(verifyUserToken, FlightController.createFlight);
 
 flightRouter
