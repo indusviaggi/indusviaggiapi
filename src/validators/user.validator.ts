@@ -37,8 +37,3 @@ export const loginUserDataValidator = [
     .isString()
     .withMessage("Password should be string"),
 ];
-
-export const updateBlogDataValidator = [
-  body("email").isString().withMessage("Title should be string"),
-  body("description").isString().withMessage("Description should be string"),
-];
