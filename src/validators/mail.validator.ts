@@ -1,11 +1,11 @@
 import { body } from "express-validator";
 
 export const sendMailValidator = [
-  body("to").exists().isEmail().normalizeEmail(),
-  body("subject").exists().trim().escape(),
-  body("text").optional().trim().escape(),
-  body("html").optional().trim(),
+  body("to").optional().isEmail().normalizeEmail(),
+  body("type").exists().trim().escape(),
   body("name").optional().trim().escape(),
-  body("email").optional().isEmail().normalizeEmail(),
+  body("subject").optional().trim().escape(),
   body("message").optional().trim().escape(),
+  body("email").optional().trim().escape(),
+  body("message1").optional().trim().escape(),
 ];

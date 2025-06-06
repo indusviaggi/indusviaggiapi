@@ -5,32 +5,59 @@ import { loadTemplate, renderTemplate } from "../emails";
 
 export const sendMailController = async (req: Request, res: Response) => {
   try {
-    const { to, subject, text, type } = req.body;
-    if (!to || !subject || (!text)) {
+    let { to, type } = req.body;
+    if (!type) {
       return sendError(res, { message: "Missing required fields." }, 400);
     }
     let html = "Hello, this is a test email.";
+    let subject = "";
+    let text = "";
     if (type == 'newsletter') {
       const template = loadTemplate("newsletter.html");
+      subject = "Welcome to our Newsletter!";
+      text = "Thank you for subscribing to our newsletter.";  
       html = renderTemplate(template, {
-        name: "Ajay",
+        name: to.split('@')[0],
       });
     } else if (type == 'booking') {
+      const {
+        origin,
+        destination,
+        departureDate,
+        returnDate,
+        tripType,
+        adults,
+        children,
+        infants,
+        cabinClass,
+        promoCode
+      } = req.body;
+
       const template = loadTemplate("booking.html");
+      to = process.env.TO_MAIL_USER;
+      subject = "Your Booking Sent";
+      text = "Thank you for booking with us. Here are your booking details.";
       html = renderTemplate(template, {
-        name: "Ajay",
-        tripName: "Italy Explorer",
-        bookingId: "BK20250601A",
-        departureDate: "2025-07-10",
-        returnDate: "2025-09-12"
+        origin,
+        destination,
+        departureDate: departureDate,
+        returnDate: tripType === 'roundtrip' ? returnDate : 'N/A',
+        tripType,
+        adults,
+        children,
+        infants,
+        cabinClass,
+        promoCode,
       });
     } else if (type == 'query') {
       const template = loadTemplate("query.html");
+      subject = "Your Query Received";
+      text = "Thank you for reaching out to us. We will get back to you shortly.";
       html = renderTemplate(template, {
-        name: "Ajay",
-        email: "italy@explorer.com",
-        subject: "BK20250601A",
-        message: "message",
+        name: req?.body.name,
+        email: req?.body.to,
+        subject: req?.body.subject,
+        message: req?.body.message,
       });
     }
     await MailService.sendMail({ to, subject, text, html });

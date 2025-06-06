@@ -4,17 +4,24 @@
     <div style="background: #c1dbe1; max-width: 600px; margin: 40px auto; border-radius: 12px; box-shadow: 0 4px 16px rgba(26,115,232,0.08); padding: 40px 32px 32px 32px;">
       <div style="text-align: center;">
         <img src="https://www.indusviaggi.com/assets/images/l1.png" alt="Indus Viaggi" style="width: 120px; margin-bottom: 24px;"/>
-        <h2 style="color: #1a73e8; margin-bottom: 8px;">Booking Confirmation</h2>
-        <p style="color: #222; font-size: 18px; margin-bottom: 24px;">Dear <b>{{name}}</b>,</p>
+        <h2 style="color: #1a73e8; margin-bottom: 8px;">Booking Request</h2>
       </div>
       <div style="background: #f6faff; border-radius: 8px; padding: 24px; margin-bottom: 24px;">
         <p style="font-size: 16px; color: #333; text-align: center;">
-          Your booking for <b>{{tripName}}</b> is <span style="color: #34a853;">confirmed</span>!
+          New query for booking is arrived
         </p>
         <table style="margin: 20px auto 0 auto; font-size: 15px; color: #444;">
           <tr>
-            <td style="padding: 6px 12px; font-weight: bold;">Booking ID:</td>
-            <td style="padding: 6px 12px;">{{bookingId}}</td>
+            <td style="padding: 6px 12px; font-weight: bold;">Trip:</td>
+            <td style="padding: 6px 12px;">{{tripType}}</td>
+          </tr>
+          <tr>
+            <td style="padding: 6px 12px; font-weight: bold;">Origin:</td>
+            <td style="padding: 6px 12px;">{{origin}}</td>
+          </tr>
+          <tr>
+            <td style="padding: 6px 12px; font-weight: bold;">Destination:</td>
+            <td style="padding: 6px 12px;">{{destination}}</td>
           </tr>
           <tr>
             <td style="padding: 6px 12px; font-weight: bold;">Departure:</td>
@@ -23,6 +30,26 @@
           <tr>
             <td style="padding: 6px 12px; font-weight: bold;">Return:</td>
             <td style="padding: 6px 12px;">{{returnDate}}</td>
+          </tr>
+          <tr>
+            <td style="padding: 6px 12px; font-weight: bold;">Adults:</td>
+            <td style="padding: 6px 12px;">{{adults}}</td>
+          </tr>
+          <tr>
+            <td style="padding: 6px 12px; font-weight: bold;">Children:</td>
+            <td style="padding: 6px 12px;">{{children}}</td>
+          </tr>
+          <tr>
+            <td style="padding: 6px 12px; font-weight: bold;">Infants:</td>
+            <td style="padding: 6px 12px;">{{infants}}</td>
+          </tr>
+          <tr>
+            <td style="padding: 6px 12px; font-weight: bold;">Cabin Class:</td>
+            <td style="padding: 6px 12px;">{{cabinClass}}</td>
+          </tr>
+          <tr>
+            <td style="padding: 6px 12px; font-weight: bold;">Promo Code:</td>
+            <td style="padding: 6px 12px;">{{promoCode}}</td>
           </tr>
         </table>
       </div>

@@ -21,10 +21,6 @@ export const MailService = {
     text?: string;
     html?: string;
   }) => {
-    // Basic checks
-    if (!to || !subject || (!text && !html)) {
-      throw new CustomError("Missing required email fields.", 400);
-    }
     // Optionally, check for valid email format
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(to)) {
