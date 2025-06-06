@@ -16,24 +16,21 @@ export const AuthController = {
   registerUser: async (req: Request, res: Response) => {
     try {
       const errors = validationResult(req);
-      // if there is error then return Error
       if (!errors.isEmpty()) {
-        sendError(res, {errors: errors.array()}, 400);
-        return;
+        return sendError(res, {errors: errors.array()}, 400);
       }
       const user = req.body;
       if (!user.email || !user.password) {
-        sendError(res, {message: 'Username and password are required.'}, 400);
-        return;
+        return sendError(res, {message: 'Username and password are required.'}, 400);
       }
       const reg_user = await userService.createUser({
         name: user.name,
         email: user.email,
         password: user.password,
       });
-      sendSuccess(res, {user: reg_user});
+      return sendSuccess(res, {user: reg_user});
     } catch (err: any) {
-      sendError(res, err, 400);
+      return sendError(res, err, 400);
     }
   },
 
@@ -41,48 +38,36 @@ export const AuthController = {
   loginUser: async (req: Request, res: Response) => {
     try {
       const errors = validationResult(req);
-
-      // if there is error then return Error
       if (!errors.isEmpty()) {
-         sendError(res, {errors: errors.array()}, 400);
-         return;
+        return sendError(res, {errors: errors.array()}, 400);
       }
-
-      /* check user is exist with our system */
       const user = await User.findOne({
         email: req.body.email,
       });
       if (!user) {
-        sendError(res, {message: "No account is associated with the given email"}, 400);
-        return;
+        return sendError(res, {message: "No account is associated with the given email"}, 400);
       }
-
-      /* compare password */
       const isMatch = await bcrypt.compare(req.body.password, user.password);
       if (!isMatch) {
-        sendError(res, {message: "Invalid Password"}, 400);
-        return;
+        return sendError(res, {message: "Invalid Password"}, 400);
       }
-      //create token
       const token = jwt.sign(
         { _id: user._id, email: user.email, role: user.role },
         process.env.JWT_SECRET || '',
-        {
-          expiresIn: "1d",
-        }
+        { expiresIn: "1d" }
       );
-      sendSuccess(res, {token, user});
+      return sendSuccess(res, {token, user});
     } catch (err: any) {
-       sendError(res, err);
+      return sendError(res, err);
     }
   },
 
-   /* get user profile logout */
+  /* get user profile logout */
   logoutUser: async (req: profileRequest, res: Response) => {
     const user = await User.findOne({
       email: req.user.email,
     });
-    sendSuccess(res, user);
+    return sendSuccess(res, user);
   },
 
   /* get user profile */
@@ -90,6 +75,6 @@ export const AuthController = {
     const user = await User.findOne({
       email: req.user.email,
     });
-    sendSuccess(res, user);
+    return sendSuccess(res, user);
   },
 };

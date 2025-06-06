@@ -1,8 +1,15 @@
-import { Router } from "express";
+import express from "express";
 import { sendMailController } from "../controllers/mailController";
+import { sendMailValidator } from "../validators/mail.validator";
+import { validateRequest } from "../middlewares/validateRequest";
 
-const router = Router();
+const mailRouter = express.Router();
 
-router.post("/send-mail", sendMailController);
+mailRouter.post(
+  "/send-mail",
+  sendMailValidator,
+  validateRequest,
+  sendMailController
+);
 
-export default router;
+export default mailRouter;

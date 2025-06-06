@@ -2,29 +2,95 @@ import Booking from "../models/booking";
 import Flight from "../models/flight";
 import User from "../models/user";
 import Passenger from "../models/passenger";
+import mongoose from "mongoose";
+import { CustomError } from "../utils/customError";
 
 export const BookingService = {
   getAllBookings: async () => {
-    return await Booking.find().populate("user").populate("flight");
+    return Booking.find().populate("user").populate("flight");
   },
   createBooking: async (booking: any) => {
-    return await Booking.create(booking);
+    // Example: Check if flight exists
+    if (!booking.flight || !mongoose.Types.ObjectId.isValid(booking.flight)) {
+      throw new CustomError("Invalid or missing flight ID.", 400);
+    }
+    const flight = await Flight.findById(booking.flight);
+    if (!flight) {
+      throw new CustomError("Flight not found.", 404);
+    }
+    // Example: Check if user exists
+    if (!booking.user || !mongoose.Types.ObjectId.isValid(booking.user)) {
+      throw new CustomError("Invalid or missing user ID.", 400);
+    }
+    const user = await User.findById(booking.user);
+    if (!user) {
+      throw new CustomError("User not found.", 404);
+    }
+    // You can add more business logic checks here (e.g., seat availability)
+    return Booking.create(booking);
   },
   getBookingById: async (id: string) => {
-    return await Booking.findById(id).populate("user").populate("flight");
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      throw new CustomError("Invalid booking ID format.", 400);
+    }
+    const booking = await Booking.findById(id).populate("user").populate("flight");
+    if (!booking) {
+      throw new CustomError("Booking not found.", 404);
+    }
+    return booking;
   },
   updateBooking: async (id: string, booking: any) => {
-    return await Booking.findByIdAndUpdate(id, booking, { new: true })
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      throw new CustomError("Invalid booking ID format.", 400);
+    }
+    // Optional: Check if flight exists if updating flight
+    if (booking.flight && !mongoose.Types.ObjectId.isValid(booking.flight)) {
+      throw new CustomError("Invalid flight ID.", 400);
+    }
+    if (booking.flight) {
+      const flight = await Flight.findById(booking.flight);
+      if (!flight) {
+        throw new CustomError("Flight not found.", 404);
+      }
+    }
+    // Optional: Check if user exists if updating user
+    if (booking.user && !mongoose.Types.ObjectId.isValid(booking.user)) {
+      throw new CustomError("Invalid user ID.", 400);
+    }
+    if (booking.user) {
+      const user = await User.findById(booking.user);
+      if (!user) {
+        throw new CustomError("User not found.", 404);
+      }
+    }
+    const updated = await Booking.findByIdAndUpdate(id, booking, { new: true })
       .populate("user")
       .populate("flight");
+    if (!updated) {
+      throw new CustomError("Booking not found.", 404);
+    }
+    return updated;
   },
   deleteBooking: async (id: string) => {
-    return await Booking.findByIdAndDelete(id).populate("user").populate("flight");
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      throw new CustomError("Invalid booking ID format.", 400);
+    }
+    const deleted = await Booking.findByIdAndDelete(id).populate("user").populate("flight");
+    if (!deleted) {
+      throw new CustomError("Booking not found.", 404);
+    }
+    return deleted;
   },
   getBookingsByUser: async (userId: string) => {
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+      throw new CustomError("Invalid user ID format.", 400);
+    }
     return await Booking.find({ user: userId }).populate("user").populate("flight");
   },
   getBookingsByFlight: async (flightId: string) => {
+    if (!mongoose.Types.ObjectId.isValid(flightId)) {
+      throw new CustomError("Invalid flight ID format.", 400);
+    }
     return await Booking.find({ flight: flightId }).populate("user").populate("flight");
   },
   getBookingsByTimeSpan: async (start: Date, end: Date) => {
@@ -33,17 +99,14 @@ export const BookingService = {
     }).populate("user").populate("flight");
   },
   getBookingsByPassenger: async (passengerId: string) => {
-    // Find all passenger docs for this passengerId (could also use passportNumber or email)
+    if (!mongoose.Types.ObjectId.isValid(passengerId)) {
+      throw new CustomError("Invalid passenger ID format.", 400);
+    }
     const passengers = await Passenger.find({ _id: passengerId });
     if (!passengers.length) {
-      const error = new Error("Passenger not found");
-      (error as any).isCustom = true;
-      (error as any).statusCode = 404;
-      throw error;
+      throw new CustomError("Passenger not found.", 404);
     }
-    // Extract all booking IDs
     const bookingIds = passengers.map((p) => p.booking);
-    // Find all bookings with those IDs
     return await Booking.find({ _id: { $in: bookingIds } })
       .populate("user")
       .populate("flight");

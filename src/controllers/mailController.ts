@@ -34,8 +34,8 @@ export const sendMailController = async (req: Request, res: Response) => {
       });
     }
     await MailService.sendMail({ to, subject, text, html });
-    sendSuccess(res, {}, "Email sent successfully.");
+    return sendSuccess(res, {}, "Email sent successfully.");
   } catch (error) {
-    sendError(res, error);
+    return sendError(res, error);
   }
 };

@@ -1,4 +1,5 @@
 import nodemailer from "nodemailer";
+import { CustomError } from "../utils/customError";
 
 const transporter = nodemailer.createTransport({
   service: "gmail", // Change as needed
@@ -20,6 +21,16 @@ export const MailService = {
     text?: string;
     html?: string;
   }) => {
+    // Basic checks
+    if (!to || !subject || (!text && !html)) {
+      throw new CustomError("Missing required email fields.", 400);
+    }
+    // Optionally, check for valid email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(to)) {
+      throw new CustomError("Invalid recipient email address.", 400);
+    }
+
     const mailOptions = {
       from: process.env.MAIL_USER,
       to,
@@ -27,6 +38,15 @@ export const MailService = {
       text,
       html,
     };
-    return transporter.sendMail(mailOptions);
+
+    try {
+      return await transporter.sendMail(mailOptions);
+    } catch (err: any) {
+      throw new CustomError(
+        "Failed to send email: " + (err.message || "Unknown error"),
+        500,
+        err
+      );
+    }
   },
 };

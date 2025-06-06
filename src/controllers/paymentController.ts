@@ -6,41 +6,41 @@ export const PaymentController = {
   getAllPayments: async (req: Request, res: Response) => {
     try {
       const payments = await PaymentService.getAllPayments();
-      sendSuccess(res, payments);
+      return sendSuccess(res, payments);
     } catch (err) {
-      sendError(res, err);
+      return sendError(res, err);
     }
   },
   createPayment: async (req: Request, res: Response) => {
     try {
       const payment = await PaymentService.createPayment(req.body);
-      sendSuccess(res, payment);
+      return sendSuccess(res, payment);
     } catch (err) {
-      sendError(res, err);
+      return sendError(res, err);
     }
   },
   getPaymentById: async (req: Request, res: Response) => {
     try {
       const payment = await PaymentService.getPaymentById(req.params.id);
-      sendSuccess(res, payment);
+      return sendSuccess(res, payment);
     } catch (err) {
-      sendError(res, err);
+      return sendError(res, err);
     }
   },
   updatePayment: async (req: Request, res: Response) => {
     try {
       const payment = await PaymentService.updatePayment(req.params.id, req.body);
-      sendSuccess(res, payment);
+      return sendSuccess(res, payment);
     } catch (err) {
-      sendError(res, err);
+      return sendError(res, err);
     }
   },
   deletePayment: async (req: Request, res: Response) => {
     try {
       const payment = await PaymentService.deletePayment(req.params.id);
-      sendSuccess(res, payment);
+      return sendSuccess(res, payment);
     } catch (err) {
-      sendError(res, err);
+      return sendError(res, err);
     }
   },
 };
