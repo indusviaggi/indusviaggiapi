@@ -41,10 +41,23 @@ export const UserController = {
   },
 
   deleteUser: async (req: Request, res: Response) => {
-    try {
+    try{
       const user = await userService.deleteUser(req.params.id);
       return sendSuccess(res, user);
     } catch (err: any) {
+      return sendError(res, err);
+    }
+  },
+  updateUserPhoto: async (req: Request, res: Response) => {
+    try {
+      const userId = req.params.id;
+      if (!req?.file || !(req?.file as any).location) {
+        return sendError(res, { message: "No photo uploaded." }, 400);
+      }
+      const photoUrl = (req?.file as any).location; // S3 file URL
+      const user = await userService.updateUser(userId, { photo: photoUrl });
+      return sendSuccess(res, user, "Photo updated.");
+    } catch (err) {
       return sendError(res, err);
     }
   },

@@ -3,6 +3,7 @@ import bcrypt from "bcryptjs";
 
 const userSchema = new Schema({
   name: { type: String, required: [true, "User Full Name is required"] },
+  photo: { type: String },
   email: {
     type: String,
     required: [true, "User Email is required."],
