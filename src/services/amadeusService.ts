@@ -44,7 +44,7 @@ export const AmadeusService = {
         }
       }
       // Fetch airline names from Amadeus
-      const airlineNames = await AmadeusService.getAirlineNames(Array.from(carrierCodes));
+      const airlineNames = await AmadeusService.getAirlineNames(Array.from(carrierCodes) as string[]);
       return AmadeusService._formatFlightOffersDetailedInternal(response.data, airlineNames);
     } catch (error: any) {
       if (error.response && error.response.data && error.response.data.errors) {
