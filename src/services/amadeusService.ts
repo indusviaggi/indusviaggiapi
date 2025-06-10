@@ -1,6 +1,93 @@
 import amadeus from '../configs/amadeus';
 import { CustomError } from '../utils/customError';
 
+// Helper functions for segment info extraction
+function getBaggage(flight: any, segmentId: string): string {
+  for (const tp of flight.travelerPricings || []) {
+    for (const fd of tp.fareDetailsBySegment || []) {
+      if (fd.segmentId == segmentId) {
+        if (fd.includedCheckedBags) {
+          if (fd.includedCheckedBags.quantity) {
+            return `${fd.includedCheckedBags.quantity} piece(s)`;
+          } else if (fd.includedCheckedBags.weight && fd.includedCheckedBags.weightUnit) {
+            return `${fd.includedCheckedBags.weight}${fd.includedCheckedBags.weightUnit}`;
+          }
+        }
+      }
+    }
+  }
+  return "-";
+}
+
+function getCabinBags(flight: any, segmentId: string): string {
+  for (const tp of flight.travelerPricings || []) {
+    for (const fd of tp.fareDetailsBySegment || []) {
+      if (fd.segmentId == segmentId) {
+        if (fd.includedCabinBags && fd.includedCabinBags.quantity) {
+          return `${fd.includedCabinBags.quantity} piece(s)`;
+        }
+      }
+    }
+  }
+  return "-";
+}
+
+function getAmenities(flight: any, segmentId: string): string {
+  for (const tp of flight.travelerPricings || []) {
+    for (const fd of tp.fareDetailsBySegment || []) {
+      if (fd.segmentId == segmentId) {
+        if (fd.amenities && Array.isArray(fd.amenities) && fd.amenities.length > 0) {
+          return fd.amenities.map((a: any) => a.description).join(", ");
+        }
+      }
+    }
+  }
+  return "-";
+}
+
+function getTravelClass(flight: any, segmentId: string): string {
+  for (const tp of flight.travelerPricings || []) {
+    for (const fd of tp.fareDetailsBySegment || []) {
+      if (fd.segmentId == segmentId) {
+        return fd.cabin || "-";
+      }
+    }
+  }
+  return "-";
+}
+
+function getLayover(segments: any[], idx: number): string {
+  if (idx === 0) return "No layover";
+  const prevArrival = new Date(segments[idx - 1].arrival.at);
+  const thisDeparture = new Date(segments[idx].departure.at);
+  const mins = Math.round((thisDeparture.getTime() - prevArrival.getTime()) / (60 * 1000));
+  if (mins < 1) return "No layover";
+  const h = Math.floor(mins / 60);
+  const m = mins % 60;
+  return h > 0 ? `${h}h ${m}m` : `${m}m`;
+}
+
+function getAirlineName(carrierCode: string, airlineNames: Record<string, string>): string {
+  return airlineNames[carrierCode] || carrierCode;
+}
+
+function formatSegments(segments: any[], flight: any, airlineNames: Record<string, string>) {
+  return segments.map((seg: any, idx: number) => ({
+    departureTime: seg.departure.at,
+    arrivalTime: seg.arrival.at,
+    from: seg.departure.iataCode,
+    to: seg.arrival.iataCode,
+    airLine: seg.carrierCode,
+    airlineName: getAirlineName(seg.carrierCode, airlineNames),
+    flightNumber: seg.number,
+    baggage: getBaggage(flight, seg.id),
+    cabinBags: getCabinBags(flight, seg.id),
+    amenities: getAmenities(flight, seg.id),
+    travelClass: getTravelClass(flight, seg.id),
+    stay: getLayover(segments, idx)
+  }));
+}
+
 export const AmadeusService = {
   /**
    * Search for flights using Amadeus Flight Offers Search API
@@ -20,7 +107,7 @@ export const AmadeusService = {
     maxPrice?: number;
     max?: number;
     directFlightsOnly?: boolean;
-
+    includedAirlineCodes?: string[];
   }) => {
     try {
       const searchParams: any = {
@@ -28,7 +115,7 @@ export const AmadeusService = {
         destinationLocationCode: params.destinationLocationCode,
         departureDate: params.departureDate,
         adults: params.adults.toString(),
-        currencyCode: "EUR",
+        currencyCode: params.currencyCode || "EUR",
       };
       if (params.returnDate) {
         searchParams.returnDate = params.returnDate;
@@ -36,38 +123,54 @@ export const AmadeusService = {
       if (params.children) {
         searchParams.children = params.children.toString();
       }
+      if (params.maxPrice) {
+        searchParams.maxPrice = params.maxPrice;
+      }
+      if (params.max) {
+        searchParams.max = params.max;
+      }
       if (params.directFlightsOnly) {
         searchParams.nonStop = true;
       }
       if (params.travelClass) {
         searchParams.travelClass = params.travelClass;
       }
+      if(params.includedAirlineCodes && params.includedAirlineCodes.length > 0) {
+        searchParams.includedAirlineCodes = params.includedAirlineCodes.join(",");
+      }
       const response = await amadeus.shopping.flightOffersSearch.get(searchParams);
+      // Collect all unique carrier codes from all segments
+      const carrierCodes = new Set<string>();
+      for (const flight of response.data) {
+        for (const itin of flight.itineraries) {
+          for (const seg of itin.segments) {
+            carrierCodes.add(seg.carrierCode);
+          }
+        }
+      }
+      // Fetch airline names
+      const airlineNames = await AmadeusService.getAirlineNames(Array.from(carrierCodes));
       const flights = response.data.map((flight: any) => {
+        // Departure (first itinerary)
+        const depSegments = flight.itineraries[0].segments;
+        // Return trip (second itinerary, if exists)
+        let retTrip = null;
+        if (flight.itineraries.length > 1) {
+          const retSegments = flight.itineraries[1].segments;
+          retTrip = {
+            duration: flight.itineraries[1].duration,
+            segments: formatSegments(retSegments, flight, airlineNames)
+          };
+        }
         const newFlight = {
           ticketType: flight.itineraries.length > 1 ? "round-trip" : "one-way",
           departure: {
-            departureTime: flight.itineraries[0].segments[0].departure.at,
-            arrivalTime: flight.itineraries[0].segments[0].arrival.at,
             duration: flight.itineraries[0].duration,
-            from: flight.itineraries[0].segments[0].departure.iataCode,
-            to: flight.itineraries[0].segments[0].arrival.iataCode,
-            airLine: flight.validatingAirlineCodes[0],
-            flightNumber: flight.itineraries[0].segments[0].number,
+            segments: formatSegments(depSegments, flight, airlineNames)
           },
-          returnTrip: flight.itineraries.length > 1
-            ? {
-                departureTime: flight.itineraries[1].segments[0].departure.at,
-                arrivalTime: flight.itineraries[1].segments[0].arrival.at,
-                duration: flight.itineraries[1].duration,
-                from: flight.itineraries[1].segments[0].departure.iataCode,
-                to: flight.itineraries[1].segments[0].arrival.iataCode,
-                airLine: flight.validatingAirlineCodes[0],
-                flightNumber: flight.itineraries[1].segments[0].number,
-              }
-            : null,
+          return: retTrip,
           price: flight.price.total,
-          travelClass: flight.travelerPricings[0].fareDetailsBySegment[0].cabin,
+          travelClass: (depSegments[0] && getTravelClass(flight, depSegments[0].id)) || null,
           bookedTickets: flight.travelerPricings.length,
         };
         return newFlight;
@@ -97,81 +200,6 @@ export const AmadeusService = {
       // If lookup fails, just return empty map (fallback to code)
       return {};
     }
-  },
-
-  /**
-   * Internal: Format flight offers for detailed display (airline, times, layovers, baggage, etc.)
-   * @param flightOffers Raw flight offers array
-   * @param airlineNames Map of carrierCode to full name
-   * @returns Array of formatted offers, sorted by price
-   */
-  _formatFlightOffersDetailedInternal: (flightOffers: any[], airlineNames: Record<string, string> = {}) => {
-    function getBaggageInfo(offer: any, segmentId: any) {
-      for (const tp of offer.travelerPricings || []) {
-        for (const fd of tp.fareDetailsBySegment || []) {
-          if (fd.segmentId == segmentId) {
-            return {
-              checkedBags: fd.includedCheckedBags || null,
-              cabinBags: fd.includedCabinBags || null,
-              fareClass: fd.class,
-              brandedFare: fd.brandedFare,
-              brandedFareLabel: fd.brandedFareLabel,
-              amenities: fd.amenities || []
-            };
-          }
-        }
-      }
-      return {};
-    }
-
-    function formatSegments(segments: any[], offer: any) {
-      return segments.map((seg, idx) => {
-        let layover = null;
-        if (idx > 0) {
-          const prevArrival = new Date(segments[idx - 1].arrival.at);
-          const thisDeparture = new Date(seg.departure.at);
-          layover = Math.round((thisDeparture.getTime() - prevArrival.getTime()) / (60 * 1000));
-        }
-        const baggage = getBaggageInfo(offer, seg.id);
-        return {
-          airline: seg.carrierCode,
-          airlineName: airlineNames[seg.carrierCode] || seg.carrierCode,
-          flightNumber: seg.number,
-          from: seg.departure.iataCode,
-          fromTerminal: seg.departure.terminal,
-          departureTime: seg.departure.at,
-          to: seg.arrival.iataCode,
-          toTerminal: seg.arrival.terminal,
-          arrivalTime: seg.arrival.at,
-          duration: seg.duration,
-          layoverMinutes: layover,
-          ...baggage // includes checkedBags, cabinBags, fareClass, brandedFare, amenities
-        };
-      });
-    }
-
-    const formatted = flightOffers.map(offer => {
-      const outbound = offer.itineraries[0];
-      const inbound = offer.itineraries[1];
-      return {
-        totalPrice: offer.price.total,
-        currency: offer.price.currency,
-        validatingAirline: offer.validatingAirlineCodes ? offer.validatingAirlineCodes[0] : null,
-        outbound: {
-          duration: outbound.duration,
-          segments: formatSegments(outbound.segments, offer)
-        },
-        inbound: inbound
-          ? {
-              duration: inbound.duration,
-              segments: formatSegments(inbound.segments, offer)
-            }
-          : null
-      };
-    });
-    // Sort by price (ascending)
-    formatted.sort((a, b) => parseFloat(a.totalPrice) - parseFloat(b.totalPrice));
-    return formatted;
   },
 
   /**
