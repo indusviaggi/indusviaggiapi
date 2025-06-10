@@ -15,41 +15,65 @@ export const AmadeusService = {
     adults: number;
     children?: number;
     infants?: number;
-    travelClass?: string;
+    travelClass?: "ECONOMY" | "BUSINESS" | "PREMIUM_ECONOMY" | "FIRST";
     currencyCode?: string;
     maxPrice?: number;
     max?: number;
+    directFlightsOnly?: boolean;
+
   }) => {
     try {
-      const response = await amadeus.shopping.flightOffersSearch.get({
+      const searchParams: any = {
         originLocationCode: params.originLocationCode,
         destinationLocationCode: params.destinationLocationCode,
         departureDate: params.departureDate,
-        returnDate: params.returnDate,
-        adults: params.adults,
-        children: params.children,
-        infants: params.infants,
-        travelClass: params.travelClass,
-        currencyCode: params.currencyCode || 'EUR',
-        maxPrice: params.maxPrice,
-        max: params.max || 20
+        adults: params.adults.toString(),
+        currencyCode: "EUR",
+      };
+      if (params.returnDate) {
+        searchParams.returnDate = params.returnDate;
+      }
+      if (params.children) {
+        searchParams.children = params.children.toString();
+      }
+      if (params.directFlightsOnly) {
+        searchParams.nonStop = true;
+      }
+      if (params.travelClass) {
+        searchParams.travelClass = params.travelClass;
+      }
+      const response = await amadeus.shopping.flightOffersSearch.get(searchParams);
+      const flights = response.data.map((flight: any) => {
+        const newFlight = {
+          ticketType: flight.itineraries.length > 1 ? "round-trip" : "one-way",
+          departure: {
+            departureTime: flight.itineraries[0].segments[0].departure.at,
+            arrivalTime: flight.itineraries[0].segments[0].arrival.at,
+            duration: flight.itineraries[0].duration,
+            from: flight.itineraries[0].segments[0].departure.iataCode,
+            to: flight.itineraries[0].segments[0].arrival.iataCode,
+            airLine: flight.validatingAirlineCodes[0],
+            flightNumber: flight.itineraries[0].segments[0].number,
+          },
+          returnTrip: flight.itineraries.length > 1
+            ? {
+                departureTime: flight.itineraries[1].segments[0].departure.at,
+                arrivalTime: flight.itineraries[1].segments[0].arrival.at,
+                duration: flight.itineraries[1].duration,
+                from: flight.itineraries[1].segments[0].departure.iataCode,
+                to: flight.itineraries[1].segments[0].arrival.iataCode,
+                airLine: flight.validatingAirlineCodes[0],
+                flightNumber: flight.itineraries[1].segments[0].number,
+              }
+            : null,
+          price: flight.price.total,
+          travelClass: flight.travelerPricings[0].fareDetailsBySegment[0].cabin,
+          bookedTickets: flight.travelerPricings.length,
+        };
+        return newFlight;
       });
-      // Get all unique carrier codes from the offers
-      const carrierCodes = new Set();
-      for (const offer of response.data) {
-        for (const itin of offer.itineraries) {
-          for (const seg of itin.segments) {
-            carrierCodes.add(seg.carrierCode);
-          }
-        }
-      }
-      // Fetch airline names from Amadeus
-      const airlineNames = await AmadeusService.getAirlineNames(Array.from(carrierCodes) as string[]);
-      return AmadeusService._formatFlightOffersDetailedInternal(response.data, airlineNames);
-    } catch (error: any) {
-      if (error.response && error.response.data && error.response.data.errors) {
-        throw new CustomError(error.response.data.errors[0].detail, error.response.statusCode || 500);
-      }
+      return flights;
+    } catch (error) {
       throw new CustomError('Error searching flights - ' + JSON.stringify(error), 500);
     }
   },
