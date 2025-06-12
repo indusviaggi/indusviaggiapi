@@ -51,11 +51,12 @@ export const sendMailController = async (req: Request, res: Response) => {
       });
     } else if (type == 'query') {
       const template = loadTemplate("query.html");
+      to = process.env.MAIL_AGENCY;
       subject = "New Info Query Received";
       text = "Thank you for reaching out to us. We will get back to you shortly.";
       html = renderTemplate(template, {
         name: req?.body.name,
-        email: req?.body.to,
+        email: req?.body.from,
         subject: req?.body.subject,
         message: req?.body.message,
       });
