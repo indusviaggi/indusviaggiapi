@@ -30,11 +30,11 @@ export const sendMailController = async (req: Request, res: Response) => {
         children,
         infants,
         cabinClass,
-        promoCode
+        contact
       } = req.body;
 
       const template = loadTemplate("booking.html");
-      to = process.env.TO_MAIL_USER;
+      to = process.env.MAIL_AGENCY;
       subject = "Your Booking Sent";
       text = "Thank you for booking with us. Here are your booking details.";
       html = renderTemplate(template, {
@@ -47,7 +47,7 @@ export const sendMailController = async (req: Request, res: Response) => {
         children,
         infants,
         cabinClass,
-        promoCode,
+        contact,
       });
     } else if (type == 'query') {
       const template = loadTemplate("query.html");

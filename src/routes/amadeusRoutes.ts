@@ -8,6 +8,6 @@ const router = Router();
 router.post('/flights/search', verifyUserToken, AmadeusController.searchFlights);
 
 // Search for airports/cities
-router.get('/locations/search', verifyUserToken, AmadeusController.searchLocations);
+router.get('/locations/search', AmadeusController.searchLocations);
 
 export default router;
