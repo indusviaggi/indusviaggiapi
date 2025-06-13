@@ -86,7 +86,8 @@ export const BookingController = {
   },
   createBookingFull: async (req: Request, res: Response) => {
     try {
-      const result = await BookingService.createBookingFull(req.body);
+      const data = { ...req.body, booking: { ...req.body.booking, user: (req as any).user } };
+      const result = await BookingService.createBookingFull(data);
       return sendSuccess(res, result);
     } catch (err) {
       return sendError(res, err);

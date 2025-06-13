@@ -118,10 +118,7 @@ export const BookingService = {
       const { flight, booking, passenger } = data;
       // Create flight
       const newFlight = await Flight.create([{ ...flight }], { session });
-      // Validate user
-      if (!booking.user || !mongoose.Types.ObjectId.isValid(booking.user)) {
-        throw new CustomError("Invalid or missing user ID.", 400);
-      }
+
       const user = await User.findById(booking.user);
       if (!user) {
         throw new CustomError("User not found.", 404);
