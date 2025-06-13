@@ -1,21 +1,47 @@
 import { Schema, model } from "mongoose";
 
-const flightSchema = new Schema({
-  flightNumber: { type: String, required: true, unique: true },
-  airline: { type: String, required: true },
-  origin: { type: String, required: true }, // Airport code or city
-  destination: { type: String, required: true }, // Airport code or city
-  departureTime: { type: Date, required: true },
-  arrivalTime: { type: Date, required: true },
-  duration: { type: Number, required: true }, // in minutes
-  seats: [
-    {
-      seatNumber: String,
-      class: { type: String, enum: ["economy", "business", "first"] },
-      isBooked: { type: Boolean, default: false }
-    }
-  ],
-  price: { type: Number, required: true }
-}, { timestamps: true });
+const segmentSchema = new Schema(
+  {
+    id: String,
+    departureTime: Date,
+    arrivalTime: Date,
+    from: String,
+    to: String,
+    airLine: String,
+    airlineName: String,
+    flightNumber: String,
+    baggage: String,
+    cabinBags: String,
+    amenities: String,
+    travelClass: String,
+    stay: String,
+    segmentDuration: String,
+    segmentDurationMinutes: Number,
+  },
+  { _id: false }
+);
+
+const itinerarySchema = new Schema(
+  {
+    duration: String,
+    totalDuration: String,
+    totalDurationMinutes: Number,
+    segments: [segmentSchema],
+  },
+  { _id: false }
+);
+
+const flightSchema = new Schema(
+  {
+    amadeusId: String, // to store Amadeus "id"
+    ticketType: String,
+    price: Number,
+    travelClass: String,
+    bookedTickets: Number,
+    departureItinerary: itinerarySchema,
+    returnItinerary: { type: itinerarySchema, default: null },
+  },
+  { timestamps: true }
+);
 
 export default model("Flight", flightSchema);
