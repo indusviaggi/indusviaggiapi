@@ -87,6 +87,19 @@ export const BookingService = {
     }
     return await Booking.find({ user: userId }).populate("user").populate("flight");
   },
+  getUserBookingsWithDetails: async (userId: string) => {
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+      throw new CustomError("Invalid user ID format.", 400);
+    }
+    const bookings = await Booking.find({ user: userId })
+      .populate("flight");
+    const results = [];
+    for (const booking of bookings) {
+      const passengers = await Passenger.find({ booking: booking._id });
+      results.push({ booking, flight: booking.flight, passengers });
+    }
+    return results;
+  },
   getBookingsByFlight: async (flightId: string) => {
     if (!mongoose.Types.ObjectId.isValid(flightId)) {
       throw new CustomError("Invalid flight ID format.", 400);

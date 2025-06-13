@@ -7,6 +7,12 @@ import { validateRequest } from "../middlewares/validateRequest";
 const bookingRouter = express.Router();
 
 bookingRouter.get(
+  "/my",
+  verifyUserToken,
+  BookingController.getUserBookingsWithDetails
+);
+
+bookingRouter.get(
   "/user/:userId",
   verifyUserToken,
   BookingController.getBookingsByUser

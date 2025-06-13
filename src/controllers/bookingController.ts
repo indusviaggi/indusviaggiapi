@@ -93,4 +93,13 @@ export const BookingController = {
       return sendError(res, err);
     }
   },
+  getUserBookingsWithDetails: async (req: Request, res: Response) => {
+    try {
+      const userId = (req as any).user._id || (req as any).user;
+      const bookings = await BookingService.getUserBookingsWithDetails(userId);
+      return sendSuccess(res, bookings);
+    } catch (err) {
+      return sendError(res, err);
+    }
+  },
 };
