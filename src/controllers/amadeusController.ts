@@ -27,12 +27,13 @@ export const AmadeusController = {
   searchLocations: async (req: Request, res: Response) => {
     try {
       const { keyword } = req.query;
+      const type = req?.query?.type as string || 'AIRPORT,CITY';
       
       if (!keyword || typeof keyword !== 'string') {
         throw new CustomError('Search keyword is required', 400);
       }
       
-      const locations = await AmadeusService.searchLocations(keyword);
+      const locations = await AmadeusService.searchLocations(keyword, type);
       return sendSuccess(res, locations);
     } catch (err: any) {
       return sendError(res, err);

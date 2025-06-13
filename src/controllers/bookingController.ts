@@ -84,4 +84,12 @@ export const BookingController = {
       return sendError(res, err);
     }
   },
+  createBookingFull: async (req: Request, res: Response) => {
+    try {
+      const result = await BookingService.createBookingFull(req.body);
+      return sendSuccess(res, result);
+    } catch (err) {
+      return sendError(res, err);
+    }
+  },
 };

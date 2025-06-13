@@ -30,6 +30,12 @@ bookingRouter.get(
   BookingController.getBookingsByPassenger
 );
 
+bookingRouter.post(
+  "/full",
+  verifyUserToken,
+  BookingController.createBookingFull
+);
+
 bookingRouter
   .route("/")
   .get(verifyUserToken, BookingController.getAllBookings)

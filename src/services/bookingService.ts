@@ -111,4 +111,40 @@ export const BookingService = {
       .populate("user")
       .populate("flight");
   },
+  async createBookingFull(data: any) {
+    const session = await mongoose.startSession();
+    session.startTransaction();
+    try {
+      const { flight, booking, passenger } = data;
+      // Create flight
+      const newFlight = await Flight.create([{ ...flight }], { session });
+      // Validate user
+      if (!booking.user || !mongoose.Types.ObjectId.isValid(booking.user)) {
+        throw new CustomError("Invalid or missing user ID.", 400);
+      }
+      const user = await User.findById(booking.user);
+      if (!user) {
+        throw new CustomError("User not found.", 404);
+      }
+      // Create booking linked to flight
+      const newBooking = await Booking.create([
+        { ...booking, flight: newFlight[0]._id }
+      ], { session });
+      // Create passenger linked to booking
+      const newPassenger = await Passenger.create([
+        { ...passenger, booking: newBooking[0]._id }
+      ], { session });
+      await session.commitTransaction();
+      session.endSession();
+      return {
+        flight: newFlight[0],
+        booking: newBooking[0],
+        passenger: newPassenger[0]
+      };
+    } catch (err) {
+      await session.abortTransaction();
+      session.endSession();
+      throw err;
+    }
+  },
 };

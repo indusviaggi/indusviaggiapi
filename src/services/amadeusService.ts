@@ -190,6 +190,7 @@ export const AmadeusService = {
         const departureItinerary = AmadeusService.buildItinerary(flight.itineraries[0], flight, airlineNames);
         const returnItinerary = flight.itineraries[1] ? AmadeusService.buildItinerary(flight.itineraries[1], flight, airlineNames) : null;
         return {
+          id: flight.id,
           ticketType: flight.itineraries.length > 1 ? "round-trip" : "one-way",
           price: flight.price.total,
           travelClass: AmadeusService.getTravelClass(flight, departureItinerary.segments[0]?.id) || null,
@@ -211,11 +212,11 @@ export const AmadeusService = {
    * @param keyword Search keyword
    * @returns List of airports/cities
    */
-  searchLocations: async (keyword: string) => {
+  searchLocations: async (keyword: string, type: string) => {
     try {
       const response = await amadeus.referenceData.locations.get({
         keyword: keyword,
-        subType: 'AIRPORT,CITY'
+        subType: type,
       });
       const locations = response.data;
       // Ensure only one entry per IATA code (prefer AIRPORT over CITY)
