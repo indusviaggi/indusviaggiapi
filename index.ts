@@ -92,9 +92,11 @@ app.use(
   }) as ErrorRequestHandler
 );
 
-// app.listen(PORT, () => {
-//   console.log(`⚡️[server]: Server is running at https://localhost:${PORT}`);
-// });
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`⚡️[server]: Server is running at https://localhost:${PORT}`);
+  });
+}
 
 export default app;
 
