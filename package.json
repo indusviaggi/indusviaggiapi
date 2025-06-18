@@ -4,7 +4,7 @@
   "description": "",
   "main": "dist/index.js",
   "scripts": {
-    "build": "tsc --output public && npm run copy-emails-linux",
+    "build": "tsc && npm run copy-emails-linux",
     "copy-emails": "xcopy src\\emails\\templates dist\\src\\emails\\templates /E /I /Y",
     "copy-emails-linux": "cp -r src/emails/templates dist/src/emails/templates",
     "start": "node dist/index.js",

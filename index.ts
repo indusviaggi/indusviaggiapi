@@ -92,9 +92,9 @@ app.use(
   }) as ErrorRequestHandler
 );
 
-app.listen(PORT, () => {
-  console.log(`⚡️[server]: Server is running at https://localhost:${PORT}`);
-});
+// app.listen(PORT, () => {
+//   console.log(`⚡️[server]: Server is running at https://localhost:${PORT}`);
+// });
 
 export default app;
 
