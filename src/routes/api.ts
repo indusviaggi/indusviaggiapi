@@ -6,6 +6,7 @@ import passengerRouter from "./passengerRoutes";
 import paymentRouter from "./paymentRoutes";
 import mailRouter from "./mailRoutes";
 import amadeusRouter from "./amadeusRoutes";
+import enterpriseAmadeusRouter from "./enterpriseAmadeusRoutes";
 import { sendSuccess, sendError } from "../validators/response.validator";
 
 const apiRouter = express.Router();
@@ -20,5 +21,6 @@ apiRouter.use("/passengers", passengerRouter);
 apiRouter.use("/payments", paymentRouter);
 apiRouter.use("/mail", mailRouter);
 apiRouter.use("/amadeus", amadeusRouter);
+apiRouter.use("/enterprise-amadeus", enterpriseAmadeusRouter);
 
 export default apiRouter;

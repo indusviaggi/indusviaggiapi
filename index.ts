@@ -1,6 +1,6 @@
 import dotenv from "dotenv";
 dotenv.config();
-
+import { sendError } from './src/validators/response.validator';
 import express, {
   Express,
   Request,
@@ -27,19 +27,18 @@ connectDB();
 const app: Express = express();
 app.use(errorHandler);
 // CORS configuration
-const allowedOrigins = [
+const allowedOrigins = process.env.CORS_ALLOWED_ORIGINS?.split(',') || [
   'https://indusviaggi.com',
   'https://www.indusviaggi.com',
   'https://api.indusviaggi.com',
-  'http://localhost:3000'
 ];
 app.use(cors({
   origin: function (origin, callback) {
     if (!origin) return callback(null, true);
-    /*if (allowedOrigins.indexOf(origin) === -1) {
+    if (require.main !== module && allowedOrigins.indexOf(origin) === -1) {
       const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
       return callback(new Error(msg), false);
-    }*/
+    }
     return callback(null, true);
   },
   credentials: true
@@ -57,8 +56,8 @@ app.use(logRequests);
 
 // Rate limiter middleware
 const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // Limit each IP to 100 requests per windowMs
+  windowMs: (parseInt(process.env.RATE_LIMIT_WINDOW_MINUTES || '15', 10)) * 60 * 1000, // e.g. 15 minutes
+  max: parseInt(process.env.RATE_LIMIT_MAX || '100', 10), // Limit each IP to N requests per windowMs
   message: {
     success: false,
     message: "Too many requests from this IP, please try again later.",
@@ -78,7 +77,7 @@ app.use("/api/v1/", apiRouter);
 
 // 404 handler for unknown endpoints
 app.use((req, res, next) => {
-  res.status(404).json({ success: false, message: "Endpoint not found" });
+  sendError(res, { message: "Endpoint not found" }, 404);
 });
 
 /* Error handler middleware */
@@ -86,8 +85,7 @@ app.use(
   ((err, req, res, next) => {
     const statusCode = err.statusCode || 500;
     console.error(err.message, err.stack);
-    res.status(statusCode).json({ success: false, message: err.message });
-
+    sendError(res, { message: err.message }, statusCode);
     return;
   }) as ErrorRequestHandler
 );

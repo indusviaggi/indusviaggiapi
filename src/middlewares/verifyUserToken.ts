@@ -1,5 +1,6 @@
 import jwt from "jsonwebtoken";
 import { Request, Response, NextFunction } from "express";
+import { sendError } from '../validators/response.validator';
 
 export const verifyUserToken = (
   req: any,
@@ -7,21 +8,17 @@ export const verifyUserToken = (
   next: NextFunction
 ) => {
   if (!req.headers.authorization) {
-    return res
-      .status(401)
-      .send({ status: "error", message: "Unauthorized request" });
+    return sendError(res, { message: "Unauthorized request" }, 401);
   }
   const token = req.headers["authorization"].split(" ")[1];
   if (!token) {
-    return res
-      .status(401)
-      .send({ status: "error", message: "Access denied. No token provided." });
+    return sendError(res, { message: "Access denied. No token provided." }, 401);
   }
   try {
     const decoded: any = jwt.verify(token, process.env.JWT_SECRET || '');
     req.user = decoded;
     next();
   } catch (err) {
-    res.status(400).send({ status: "error", message: "Invalid token." });
+    sendError(res, { message: "Invalid token." }, 400);
   }
 };

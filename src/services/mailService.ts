@@ -2,7 +2,7 @@ import nodemailer from "nodemailer";
 import { CustomError } from "../utils/customError";
 
 const transporter = nodemailer.createTransport({
-  service: "gmail", // Change as needed
+  service: process.env.MAIL_SERVICE || "gmail",
   auth: {
     user: process.env.MAIL_USER,
     pass: process.env.MAIL_PASS,

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Locations>
+  <Location>
+    <IATACode>JFK</IATACode>
+    <Name>John F Kennedy International</Name>
+    <City>New York</City>
+    <Country>United States</Country>
+    <Type>AIRPORT</Type>
+  </Location>
+  <Location>
+    <IATACode>LHR</IATACode>
+    <Name>Heathrow</Name>
+    <City>London</City>
+    <Country>United Kingdom</Country>
+    <Type>AIRPORT</Type>
+  </Location>
+</Locations>
