@@ -1,5 +1,6 @@
 import { body } from "express-validator";
 import User from "../models/user";
+import { CustomError } from '../utils/customError';
 
 export const createUserDataValidator = [
   body("name").exists().withMessage("Name is required"),
@@ -17,7 +18,7 @@ export const createUserDataValidator = [
     .custom(async (email) => {
       const existingUser = await User.findOne({ email });
       if (existingUser) {
-        throw new Error("Email already in use");
+        throw new CustomError("Email already in use");
       }
     }),
   body("password")

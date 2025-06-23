@@ -26,7 +26,7 @@ export const sendMailController = async (req: Request, res: Response) => {
   try {
     let { to, type } = req.body;
     if (!type) {
-      return sendError(res, { message: "Missing required fields." }, 400);
+      return sendError(res, {isCustom: true, message: "Missing required fields." }, 400);
     }
     let html = "Hello, this is a test email.";
     let subject = "";

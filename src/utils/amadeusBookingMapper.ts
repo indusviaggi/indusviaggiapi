@@ -1,20 +1,20 @@
-function ensureArray(val) {
+function ensureArray(val: any): any[] {
   if (val === undefined || val === null) return [];
   return Array.isArray(val) ? val : [val];
 }
 
-function inferTripType(segments) {
+function inferTripType(segments: any[]): string {
   if (segments.length < 2) return 'oneway';
   const firstFrom = segments[0]?.from;
   const lastTo = segments[segments.length - 1]?.to;
   return firstFrom && lastTo && firstFrom === lastTo ? 'roundtrip' : 'oneway';
 }
 
-export function mapAmadeusToBookingOptions(reply) {
+export function mapAmadeusToBookingOptions(reply: any): any[] {
   const currency = reply.conversionRate?.conversionRateDetail?.currency || '';
   const flightIndex = reply.flightIndex;
   const recommendations = ensureArray(reply.recommendation);
-  const groupOfFlightsMap = {};
+  const groupOfFlightsMap: { [key: string]: any } = {};
 
   if (flightIndex) {
     const indexes = ensureArray(flightIndex);
@@ -29,7 +29,7 @@ export function mapAmadeusToBookingOptions(reply) {
     }
   }
 
-  function parseDateTime(date, time) {
+  function parseDateTime(date: any, time: any): Date | null {
     if (!date || !time) return null;
     const year = 2000 + parseInt(date.substring(0, 2), 10);
     const month = parseInt(date.substring(2, 4), 10) - 1;
@@ -39,13 +39,13 @@ export function mapAmadeusToBookingOptions(reply) {
     return new Date(Date.UTC(year, month, day, hour, minute));
   }
 
-  function calcDurationMinutes(dep, arr) {
+  function calcDurationMinutes(dep: Date | null, arr: Date | null): number | null {
     if (!dep || !arr) return null;
     return Math.round((arr.getTime() - dep.getTime()) / 60000);
   }
 
   return recommendations.map((rec, idx) => {
-    let segmentRefs = [];
+    let segmentRefs: any[] = [];
     if (rec.segmentFlightRef) {
       const refs = ensureArray(rec.segmentFlightRef);
       refs.forEach((s) => {
@@ -56,11 +56,11 @@ export function mapAmadeusToBookingOptions(reply) {
       });
     }
 
-    const segments = segmentRefs.map(ref => {
+    const segments = segmentRefs.map((ref: any) => {
       const group = groupOfFlightsMap[ref];
       if (!group) return null;
       const flightDetails = ensureArray(group.flightDetails);
-      return flightDetails.map((fd) => {
+      return flightDetails.map((fd: any) => {
         const info = fd.flightInformation;
         if (!info) return null;
         const locations = ensureArray(info.location);

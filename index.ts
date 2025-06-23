@@ -77,7 +77,7 @@ app.use("/api/v1/", apiRouter);
 
 // 404 handler for unknown endpoints
 app.use((req, res, next) => {
-  sendError(res, { message: "Endpoint not found" }, 404);
+  sendError(res, { isCustom: true, message: "Endpoint not found" }, 404);
 });
 
 /* Error handler middleware */
@@ -85,7 +85,7 @@ app.use(
   ((err, req, res, next) => {
     const statusCode = err.statusCode || 500;
     console.error(err.message, err.stack);
-    sendError(res, { message: err.message }, statusCode);
+    sendError(res, { isCustom: true, message: err.message }, statusCode);
     return;
   }) as ErrorRequestHandler
 );

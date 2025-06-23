@@ -52,7 +52,7 @@ export const UserController = {
     try {
       const userId = req.params.id;
       if (!req?.file || !(req?.file as any).location) {
-        return sendError(res, { message: "No photo uploaded." }, 400);
+        return sendError(res, {isCustom: true, message: "No photo uploaded." }, 400);
       }
       const photoUrl = (req?.file as any).location; // S3 file URL
       const user = await userService.updateUser(userId, { photo: photoUrl });

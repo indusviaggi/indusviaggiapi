@@ -64,12 +64,12 @@ export const BookingController = {
     try {
       const { start, end } = req.query;
       if (!start || !end || isNaN(Date.parse(start as string)) || isNaN(Date.parse(end as string))) {
-        return sendError(res, { message: "Invalid or missing start/end date." }, 400);
+        return sendError(res, {isCustom: true, message: "Invalid or missing start/end date." }, 400);
       }
       const startDate = new Date(start as string);
       const endDate = new Date(end as string);
       if (startDate >= endDate) {
-        return sendError(res, { message: "Start date must be before end date." }, 400);
+        return sendError(res, {isCustom: true, message: "Start date must be before end date." }, 400);
       }
       const bookings = await BookingService.getBookingsByTimeSpan(startDate, endDate);
       return sendSuccess(res, bookings);
