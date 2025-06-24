@@ -54,7 +54,7 @@ export const sendMailController = async (req: Request, res: Response) => {
       } = req.body;
 
       const template = loadTemplate("booking.html");
-      to = process.env.MAIL_AGENCY;
+      to = process.env.MAIL_AGENCY || '';
       subject = "New Booking from User";
       text = "Thank you for booking with us. Here are your booking details.";
       html = renderTemplate(template, {
@@ -84,7 +84,7 @@ export const sendMailController = async (req: Request, res: Response) => {
       } = req.body;
 
       const template = loadTemplate("agent-booking.html");
-      to = process.env.MAIL_AGENCY;
+      to = process.env.MAIL_AGENCY || '';
       subject = "New Booking from Agent";
       text = "Internal booking details.";
       html = renderTemplate(template, {
@@ -101,7 +101,7 @@ export const sendMailController = async (req: Request, res: Response) => {
       });
     } else if (type == 'query') {
       const template = loadTemplate("query.html");
-      to = process.env.MAIL_AGENCY;
+      to = process.env.MAIL_AGENCY || '';
       subject = "New Info Query Received";
       text = "Thank you for reaching out to us. We will get back to you shortly.";
       html = renderTemplate(template, {

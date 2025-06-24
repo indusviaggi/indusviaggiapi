@@ -1,5 +1,5 @@
 import { getSoapClient } from '../utils/enamSoapClient';
-import { buildSearchRequest, buildBookRequest, buildCancelRequest } from '../utils/enamRequestBuilders';
+import { buildSearchRequest, buildBookRequest, buildCancelRequest, buildMasterPricerRequest } from '../utils/enamRequestBuilders';
 import enamConfig from '../configs/enamConfig';
 import { AmadeusSessionManager } from '../sessions/enamSessionManager';
 import { FlightSearchParams, FlightBookParams, FlightCancelParams } from '../../types/enamTypes';
@@ -82,9 +82,17 @@ export const AmadeusService = {
     return result;
   },
 
-  /**
-   * Closes an Amadeus session and removes it from MongoDB.
-   */
+  async masterPricerSearch(params: FlightSearchParams, userId: string): Promise<any> {
+    let session = await getOrCreateSession(userId);
+    if (!session) {
+      session = await this.createAmadeusSession(userId);
+    }
+    const client = await getSoapClient(enamConfig.wsdl.search, session.sessionToken);
+    const request = buildMasterPricerRequest(params);
+    const [result] = await client.Fare_MasterPricerTravelBoardSearchAsync(request);
+    return result;
+  },
+
   async closeAmadeusSession(userId: string): Promise<void> {
     const session = await getOrCreateSession(userId);
     if (!session) return;

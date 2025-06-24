@@ -4,8 +4,8 @@ import { CustomError } from "../utils/customError";
 const transporter = nodemailer.createTransport({
   service: process.env.MAIL_SERVICE || "gmail",
   auth: {
-    user: process.env.MAIL_USER,
-    pass: process.env.MAIL_PASS,
+    user: process.env.MAIL_USER || '',
+    pass: process.env.MAIL_PASS || '',
   },
 });
 
@@ -28,7 +28,7 @@ export const MailService = {
     }
 
     const mailOptions = {
-      from: process.env.MAIL_USER,
+      from: process.env.MAIL_USER || '',
       to,
       subject,
       text,

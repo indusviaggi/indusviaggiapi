@@ -59,5 +59,16 @@ export const AmadeusController = {
     } catch (error) {
       return sendError(res, error);
     }
+  },
+
+  async masterPricerSearch(req: Request, res: Response) {
+    try {
+      const params: FlightSearchParams = req.body;
+      const userId = req.user?.id || req.user?._id || req.body.userId || req.query.userId;
+      const data = await AmadeusService.masterPricerSearch(params, userId);
+      return sendSuccess(res, data, 'Master Pricer search results fetched successfully');
+    } catch (error) {
+      return sendError(res, error);
+    }
   }
 };
