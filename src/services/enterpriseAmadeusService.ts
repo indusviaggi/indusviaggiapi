@@ -66,6 +66,10 @@ export const EnterpriseAmadeusService = {
    * Close Amadeus session (optional, e.g., after booking)
    */
   closeSession: async (userId: string) => {
-    await closeSession(userId);
+    try {
+      await closeSession(userId);
+    } catch (err: any) {
+      throw new CustomError(err.message || 'Error closing Amadeus Enterprise session', 500);
+    }
   }
 };

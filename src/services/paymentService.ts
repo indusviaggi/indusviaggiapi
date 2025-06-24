@@ -4,56 +4,74 @@ import { CustomError } from "../utils/customError";
 
 export const PaymentService = {
   getAllPayments: async () => {
-    return await Payment.find();
+    try {
+      return await Payment.find();
+    } catch (err: any) {
+      throw new CustomError(err.message || "Error getting all payments", 500);
+    }
   },
   createPayment: async (payment: any) => {
-    // Unique check for transactionId
-    if (payment.transactionId) {
-      const existing = await Payment.findOne({ transactionId: payment.transactionId });
-      if (existing) {
-        throw new CustomError("Transaction ID must be unique.", 409);
+    try {
+      if (payment.transactionId) {
+        const existing = await Payment.findOne({ transactionId: payment.transactionId });
+        if (existing) {
+          throw new CustomError("Transaction ID must be unique.", 409);
+        }
       }
+      return await Payment.create(payment);
+    } catch (err: any) {
+      throw new CustomError(err.message || "Error creating payment", 500);
     }
-    return await Payment.create(payment);
   },
   getPaymentById: async (id: string) => {
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      throw new CustomError("Invalid payment ID format.", 400);
+    try {
+      if (!mongoose.Types.ObjectId.isValid(id)) {
+        throw new CustomError("Invalid payment ID format.", 400);
+      }
+      const payment = await Payment.findById(id);
+      if (!payment) {
+        throw new CustomError("Payment not found.", 404);
+      }
+      return payment;
+    } catch (err: any) {
+      throw new CustomError(err.message || "Error getting payment by ID", 500);
     }
-    const payment = await Payment.findById(id);
-    if (!payment) {
-      throw new CustomError("Payment not found.", 404);
-    }
-    return payment;
   },
   updatePayment: async (id: string, payment: any) => {
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      throw new CustomError("Invalid payment ID format.", 400);
-    }
-    // Unique check for transactionId (exclude current payment)
-    if (payment.transactionId) {
-      const existing = await Payment.findOne({
-        transactionId: payment.transactionId,
-        _id: { $ne: id }
-      });
-      if (existing) {
-        throw new CustomError("Transaction ID must be unique.", 409);
+    try {
+      if (!mongoose.Types.ObjectId.isValid(id)) {
+        throw new CustomError("Invalid payment ID format.", 400);
       }
+      if (payment.transactionId) {
+        const existing = await Payment.findOne({
+          transactionId: payment.transactionId,
+          _id: { $ne: id }
+        });
+        if (existing) {
+          throw new CustomError("Transaction ID must be unique.", 409);
+        }
+      }
+      const updated = await Payment.findByIdAndUpdate(id, payment, { new: true });
+      if (!updated) {
+        throw new CustomError("Payment not found.", 404);
+      }
+      return updated;
+    } catch (err: any) {
+      throw new CustomError(err.message || "Error updating payment", 500);
     }
-    const updated = await Payment.findByIdAndUpdate(id, payment, { new: true });
-    if (!updated) {
-      throw new CustomError("Payment not found.", 404);
-    }
-    return updated;
   },
   deletePayment: async (id: string) => {
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      throw new CustomError("Invalid payment ID format.", 400);
+    try {
+      if (!mongoose.Types.ObjectId.isValid(id)) {
+        throw new CustomError("Invalid payment ID format.", 400);
+      }
+      const deleted = await Payment.findByIdAndDelete(id);
+      if (!deleted) {
+        throw new CustomError("Payment not found.", 404);
+      }
+      return deleted;
+    } catch (err: any) {
+      throw new CustomError(err.message || "Error deleting payment", 500);
     }
-    const deleted = await Payment.findByIdAndDelete(id);
-    if (!deleted) {
-      throw new CustomError("Payment not found.", 404);
-    }
-    return deleted;
   },
 };
